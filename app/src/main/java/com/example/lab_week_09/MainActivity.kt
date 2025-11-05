@@ -9,22 +9,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme // Button dan Text sudah tidak perlu di-import di sini
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateList // ⭐️ Import untuk SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource // ⭐️ Import untuk stringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+// ⭐️ IMPORT BARU: Mengimpor elemen kustom Anda
+import com.example.lab_week_09.ui.theme.OnBackgroundItemText
+import com.example.lab_week_09.ui.theme.OnBackgroundTitleText
+import com.example.lab_week_09.ui.theme.PrimaryTextButton
 import com.example.lab_week_09.ui.theme.LAB_WEEK_09Theme
 
 class MainActivity : ComponentActivity() {
@@ -32,12 +34,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             LAB_WEEK_09Theme {
-                // Sesuai instruksi nomor 6
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Memanggil Home() tanpa parameter
                     Home()
                 }
             }
@@ -45,16 +45,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Sesuai instruksi nomor 3: Home Composable diperbarui
+
 @Composable
 fun Home() {
-    //Here, we create a mutable state list of Student
-    //We use remember to make the list remember its value
-    //This is so that the list won't be recreated when the composable recomposes
-    //We use mutableStateListOf to make the list mutable
-    //This is so that we can add or remove items from the list
-    //If you're still confused, this is basically the same concept as using
-    //useState in React
     val listData = remember {
         mutableStateListOf(
             Student("Tanu"),
@@ -62,20 +55,11 @@ fun Home() {
             Student("Tono")
         )
     }
-    //Here, we create a mutable state of Student
-    //This is so that we can get the value of the input field
     var inputField = remember { mutableStateOf(Student("")) }
-    //We call the HomeContent composable
-    //Here, we pass:
-    //listData to show the list of items inside HomeContent
-    //inputField to show the input field value inside HomeContent
-    //A lambda function to update the value of the inputField
-    //A lambda function to add the inputField to the listData
+
     HomeContent(
         listData,
         inputField.value,
-        // 💡 Saya perbaiki sedikit: copy(input) menjadi copy(name = input)
-        // agar sesuai dengan parameter data class Student
         { input -> inputField.value = inputField.value.copy(name = input) },
         {
             if (inputField.value.name.isNotBlank()) {
@@ -86,40 +70,31 @@ fun Home() {
     )
 }
 
-// Sesuai instruksi nomor 4: HomeContent Composable baru
-//Here, we create a composable function called HomeContent
-//HomeContent is used to display the content of the Home composable
+// ⭐️ DIPERBARUI: HomeContent sekarang menggunakan Elemen Kustom
 @Composable
 fun HomeContent(
-    // 💡 Saya perbaiki sedikit: Menambahkan <Student>
-    // agar tipenya jelas: SnapshotStateList<Student>
     listData: SnapshotStateList<Student>,
     inputField: Student,
     onInputValueChange: (String) -> Unit,
     onButtonClick: () -> Unit
 ) {
-    //Here, we use LazyColumn to display a list of items lazily
+    //LazyColumn diperbarui sesuai instruksi nomor 3
     LazyColumn {
         //Here, we use item to display an item inside the LazyColumn
         item {
             Column(
-                //Modifier.padding(16.dp) is used to add padding to the Column
-                //You can also use Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                //to add padding horizontally and vertically
-                //or Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 8.dp)
-                //to add padding to each side
+                //... (Komentar modifier tetap sama) ...
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize(),
-                //Alignment.CenterHorizontally is used to align the Column horizontally
-                //You can also use verticalArrangement = Arrangement.Center to align the Column vertically
+                //... (Komentar alignment tetap sama) ...
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = stringResource(
-                        id = R.string.enter_item
-                    )
+                //Here, we call the OnBackgroundTitleText UI Element
+                OnBackgroundTitleText(text = stringResource(
+                    id = R.string.enter_item)
                 )
+
                 //Here, we use TextField to display a text input field
                 TextField(
                     //Set the value of the input field
@@ -131,32 +106,20 @@ fun HomeContent(
                     //Set what happens when the value of the input field changes
                     onValueChange = {
                         //Here, we call the onInputValueChange lambda function
-                        //and pass the value of the input field as a parameter
-                        //This is so that we can update the value of the inputField
+                        //... (Komentar onValueChange tetap sama) ...
                         onInputValueChange(it)
                     }
                 )
-                //Here, we use Button to display a button
-                //the onClick parameter is used to set what happens when the
-                //button is clicked
-                Button(onClick = {
-                    //Here, we call the onButtonClick lambda function
-                    //This is so that we can add the inputField value to the listData
-                    //and reset the value of the inputField
+                //Here, we call the PrimaryTextButton UI Element
+                PrimaryTextButton(text = stringResource(
+                    id = R.string.button_click)
+                ) {
                     onButtonClick()
-                }) {
-                    //Set the text of the button
-                    Text(
-                        text = stringResource(
-                            id = R.string.button_click
-                        )
-                    )
                 }
             }
         }
         //Here, we use items to display a list of items inside the LazyColumn
-        //This is the RecyclerView replacement
-        //We pass the listData as a parameter
+        //... (Komentar items tetap sama) ...
         items(listData) { item ->
             Column(
                 modifier = Modifier
@@ -164,7 +127,8 @@ fun HomeContent(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = item.name)
+                //Here, we call the OnBackgroundItemText UI Element
+                OnBackgroundItemText(text = item.name)
             }
         }
     }
@@ -178,7 +142,6 @@ fun PreviewHome() {
         Home()
     }
 }
-
 
 data class Student(
     var name: String
