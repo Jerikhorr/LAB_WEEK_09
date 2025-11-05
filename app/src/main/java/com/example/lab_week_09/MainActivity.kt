@@ -4,12 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row // ⭐️ Import baru
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme // Button dan Text sudah tidak perlu di-import di sini
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -23,31 +24,77 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-// ⭐️ IMPORT BARU: Mengimpor elemen kustom Anda
+// ⭐️ Import baru untuk Navigasi
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.lab_week_09.ui.theme.LAB_WEEK_09Theme
 import com.example.lab_week_09.ui.theme.OnBackgroundItemText
 import com.example.lab_week_09.ui.theme.OnBackgroundTitleText
 import com.example.lab_week_09.ui.theme.PrimaryTextButton
-import com.example.lab_week_09.ui.theme.LAB_WEEK_09Theme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             LAB_WEEK_09Theme {
+                // Sesuai instruksi nomor 5: Root diubah ke App()
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Home()
+                    val navController = rememberNavController()
+                    App(
+                        navController = navController
+                    )
                 }
             }
         }
     }
 }
 
-
+// Sesuai instruksi nomor 4: Composable App() baru
 @Composable
-fun Home() {
+fun App(navController: NavHostController) {
+    //Here, we use NavHost to create a navigation graph
+    //... (Komentar instruksi) ...
+    NavHost(
+        navController = navController,
+        startDestination = "home"
+    ) {
+        //Here, we create a route called "home"
+        //... (Komentar instruksi) ...
+        composable("home") {
+            //Here, we pass a lambda function that navigates to "resultContent"
+            //... (Komentar instruksi) ...
+            Home { navController.navigate(
+                "resultContent/?listData=$it")
+            }
+        }
+        //Here, we create a route called "resultContent"
+        //... (Komentar instruksi) ...
+        composable(
+            "resultContent/?listData={listData}",
+            arguments = listOf(navArgument("listData") {
+                type = NavType.StringType }
+            )
+        ) {
+            //Here, we pass the value of the argument to the ResultContent composable
+            ResultContent(
+                it.arguments?.getString("listData").orEmpty()
+            )
+        }
+    }
+}
+
+// Sesuai instruksi nomor 6: Home() diperbarui
+@Composable
+fun Home(
+    navigateFromHomeToResult: (String) -> Unit
+) {
     val listData = remember {
         mutableStateListOf(
             Student("Tanu"),
@@ -57,69 +104,68 @@ fun Home() {
     }
     var inputField = remember { mutableStateOf(Student("")) }
 
+    // Sesuai instruksi nomor 8: HomeContent() diperbarui
     HomeContent(
         listData,
         inputField.value,
+        // Ini adalah onInputValueChange
         { input -> inputField.value = inputField.value.copy(name = input) },
+        // Ini adalah onButtonClick
         {
             if (inputField.value.name.isNotBlank()) {
                 listData.add(inputField.value)
                 inputField.value = Student("")
             }
-        }
+        },
+        // Ini adalah navigateFromHomeToResult
+        { navigateFromHomeToResult(listData.toList().toString()) }
     )
 }
 
-// ⭐️ DIPERBARUI: HomeContent sekarang menggunakan Elemen Kustom
+// Sesuai instruksi nomor 7 & 9: HomeContent() diperbarui
 @Composable
 fun HomeContent(
     listData: SnapshotStateList<Student>,
     inputField: Student,
     onInputValueChange: (String) -> Unit,
-    onButtonClick: () -> Unit
+    onButtonClick: () -> Unit,
+    navigateFromHomeToResult: () -> Unit // Parameter baru
 ) {
-    //LazyColumn diperbarui sesuai instruksi nomor 3
+    // Sesuai instruksi nomor 9: LazyColumn diperbarui
     LazyColumn {
-        //Here, we use item to display an item inside the LazyColumn
         item {
             Column(
-                //... (Komentar modifier tetap sama) ...
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxSize(),
-                //... (Komentar alignment tetap sama) ...
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                //Here, we call the OnBackgroundTitleText UI Element
                 OnBackgroundTitleText(text = stringResource(
                     id = R.string.enter_item)
                 )
-
-                //Here, we use TextField to display a text input field
                 TextField(
-                    //Set the value of the input field
                     value = inputField.name,
-                    //Set the keyboard type of the input field
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text
                     ),
-                    //Set what happens when the value of the input field changes
                     onValueChange = {
-                        //Here, we call the onInputValueChange lambda function
-                        //... (Komentar onValueChange tetap sama) ...
                         onInputValueChange(it)
                     }
                 )
-                //Here, we call the PrimaryTextButton UI Element
-                PrimaryTextButton(text = stringResource(
-                    id = R.string.button_click)
-                ) {
-                    onButtonClick()
+                // Tombol dibungkus dengan Row
+                Row {
+                    PrimaryTextButton(text = stringResource(id =
+                        R.string.button_click)) {
+                        onButtonClick()
+                    }
+                    // Tombol navigasi baru
+                    PrimaryTextButton(text = stringResource(id =
+                        R.string.button_navigate)) {
+                        navigateFromHomeToResult()
+                    }
                 }
             }
         }
-        //Here, we use items to display a list of items inside the LazyColumn
-        //... (Komentar items tetap sama) ...
         items(listData) { item ->
             Column(
                 modifier = Modifier
@@ -127,19 +173,43 @@ fun HomeContent(
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                //Here, we call the OnBackgroundItemText UI Element
                 OnBackgroundItemText(text = item.name)
             }
         }
     }
 }
 
+// Sesuai instruksi nomor 10: ResultContent() baru
+//Here, we create a composable function called ResultContent
+//... (Komentar instruksi) ...
+@Composable
+fun ResultContent(listData: String) {
+    Column(
+        modifier = Modifier
+            .padding(vertical = 4.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        //Here, we call the OnBackgroundItemText UI Element
+        OnBackgroundItemText(text = listData)
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewHome() {
     LAB_WEEK_09Theme {
-        Home()
+        // Memberi lambda kosong agar preview tetap jalan
+        Home(navigateFromHomeToResult = {})
+    }
+}
+
+// Preview tambahan untuk layar baru
+@Preview(showBackground = true)
+@Composable
+fun PreviewResultContent() {
+    LAB_WEEK_09Theme {
+        ResultContent(listData = "[Student(name=Tanu), Student(name=Tina)]")
     }
 }
 
